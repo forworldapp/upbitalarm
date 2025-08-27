@@ -35,7 +35,7 @@ export default function RealTimeAlerts() {
       <div className="mb-4 bg-green-100 border border-green-300 rounded p-3">
         <div className="flex items-center">
           <CheckCircle2 className="text-green-600 w-4 h-4 mr-2" />
-          <span className="text-green-800 text-sm font-medium">실시간 모니터링 중 - 신규 상장 공시 즉시 알림</span>
+          <span className="text-green-800 text-sm font-medium">실시간 모니터링 중 - 신규 상장 공시 감지 시 즉시 알림</span>
         </div>
       </div>
     );
@@ -54,9 +54,12 @@ export default function RealTimeAlerts() {
               <AlertTriangle className="w-5 h-5 mr-2 text-yellow-300" />
               <div>
                 <h3 className="font-bold text-sm">
-                  {listing.symbol} - {listing.exchange === "upbit" ? "업비트" : "빗썸"} 신규상장
+                  {listing.isAnnouncement ? "📢 상장공시" : "신규상장"}: {listing.symbol} - {listing.exchange === "upbit" ? "업비트" : "빗썸"}
                 </h3>
-                <p className="text-xs opacity-90">{formatTimeAgo(listing.listedAt)} | {listing.marketId}</p>
+                <p className="text-xs opacity-90">
+                  {formatTimeAgo(listing.listedAt)} | 
+                  {listing.isAnnouncement ? "공시" : listing.marketId}
+                </p>
               </div>
             </div>
             <div className="text-xs font-mono bg-red-600 px-2 py-1 rounded">

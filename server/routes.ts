@@ -146,6 +146,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test announcement alert endpoint
+  app.post("/api/alerts/test-announcement", async (req, res) => {
+    try {
+      // Create a test announcement alert
+      const testAnnouncement: InsertListing = {
+        symbol: "TEST",
+        name: "테스트코인",
+        exchange: "upbit",
+        marketId: "ANNOUNCEMENT-TEST",
+        listedAt: new Date(),
+        announcementId: `test:${Date.now()}`,
+        announcementTitle: "테스트코인(TEST) 원화마켓 신규 디지털 자산 거래 지원 안내",
+        announcementUrl: "https://upbit.com/service_center/notice",
+        isAnnouncement: true,
+      };
+
+      await storage.createListing(testAnnouncement);
+      console.log("📢 Test announcement alert created");
+      res.json({ message: "Test announcement alert created", timestamp: new Date().toISOString() });
+    } catch (error) {
+      console.error("Test announcement error:", error);
+      res.status(500).json({ error: "Test announcement failed" });
+    }
+  });
+
   // Manual force check endpoint for immediate monitoring
   app.post("/api/monitor/force", async (req, res) => {
     try {

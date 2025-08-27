@@ -29,6 +29,11 @@ export const listings = pgTable("listings", {
   // Alert priority and timing
   priority: text("priority").default("normal"), // 'high', 'normal', 'low'
   estimatedListingTime: timestamp("estimated_listing_time"),
+  // Announcement-specific fields
+  announcementId: text("announcement_id"),
+  announcementTitle: text("announcement_title"),
+  announcementUrl: text("announcement_url"),
+  isAnnouncement: boolean("is_announcement").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 

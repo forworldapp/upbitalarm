@@ -30,21 +30,22 @@ export default function QuickActions() {
     },
   });
 
-  const testAlertMutation = useMutation({
+  const testAnnouncementMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/alerts/test", {});
+      const response = await apiRequest("POST", "/api/alerts/test-announcement", {});
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/listings/recent"] });
       toast({
-        title: "알림 테스트 완료",
-        description: "알림 시스템이 정상적으로 작동합니다.",
+        title: "상장공시 테스트 완료",
+        description: "테스트 상장공시 알림이 생성되었습니다.",
       });
     },
     onError: () => {
       toast({
-        title: "알림 테스트 실패",
-        description: "알림 테스트 중 오류가 발생했습니다.",
+        title: "테스트 실패",
+        description: "상장공시 테스트 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -68,17 +69,17 @@ export default function QuickActions() {
           </span>
         </Button>
 
-        {/* Test Alert */}
+        {/* Test Announcement */}
         <Button
-          onClick={() => testAlertMutation.mutate()}
-          disabled={testAlertMutation.isPending}
+          onClick={() => testAnnouncementMutation.mutate()}
+          disabled={testAnnouncementMutation.isPending}
           variant="outline"
-          className="flex items-center justify-center p-3 border-gray-300"
-          data-testid="button-test-alert"
+          className="flex items-center justify-center p-3 border-orange-300 text-orange-700 hover:bg-orange-50"
+          data-testid="button-test-announcement"
         >
           <Bell className="w-4 h-4 mr-2" />
           <span className="text-sm font-medium">
-            {testAlertMutation.isPending ? "테스트 중..." : "알림 테스트"}
+            {testAnnouncementMutation.isPending ? "테스트 중..." : "공시 테스트"}
           </span>
         </Button>
       </div>
