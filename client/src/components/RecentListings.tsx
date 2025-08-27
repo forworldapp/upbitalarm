@@ -56,14 +56,20 @@ export default function RecentListings({ limit = 10 }: RecentListingsProps) {
     refetchInterval: 30000, // Faster refresh for real-time feel
   });
 
-  // Apply limit to the listings
-  const listings = allListings?.slice(0, limit);
+  // Filter to show only listings from the past week and apply limit
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+  const listings = allListings?.filter(listing => {
+    const listingDate = new Date(listing.listedAt);
+    return listingDate >= oneWeekAgo;
+  }).slice(0, limit);
 
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">최근 상장 공시</h2>
+          <h2 className="text-lg font-semibold text-gray-900">최근 상장 (일주일)</h2>
         </div>
         <div className="p-6">
           <div className="space-y-4">
@@ -92,7 +98,7 @@ export default function RecentListings({ limit = 10 }: RecentListingsProps) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">최근 상장 공시</h2>
+          <h2 className="text-lg font-semibold text-gray-900">최근 상장 (일주일)</h2>
         </div>
         <div className="p-6 text-center text-gray-500">
           상장 정보를 불러오는데 실패했습니다.
@@ -105,7 +111,7 @@ export default function RecentListings({ limit = 10 }: RecentListingsProps) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">최근 상장 공시</h2>
+          <h2 className="text-lg font-semibold text-gray-900">최근 상장 (일주일)</h2>
         </div>
         <div className="p-6 text-center text-gray-500">
           최근 상장된 암호화폐가 없습니다.
@@ -117,10 +123,10 @@ export default function RecentListings({ limit = 10 }: RecentListingsProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">최근 상장 공시</h2>
+        <h2 className="text-lg font-semibold text-gray-900">최근 상장 (일주일)</h2>
       </div>
       <div className="p-6">
-        <div className="space-y-4">
+        <div className="space-y-2">
           {listings.map((listing) => {
             const status = getListingStatus(listing);
             const coinColor = getCoinColor(listing.symbol);
@@ -131,43 +137,37 @@ export default function RecentListings({ limit = 10 }: RecentListingsProps) {
                 : "bg-gray-50 border-gray-200";
             
             return (
-              <div key={listing.id} className={`flex items-center justify-between p-4 border rounded-lg ${backgroundClass}`}>
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 ${coinColor} rounded-full flex items-center justify-center`}>
-                    <span className="text-white font-semibold text-sm">
-                      {listing.symbol.slice(0, 4)}
+              <div key={listing.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 ${coinColor} rounded-full flex items-center justify-center`}>
+                    <span className="text-white font-semibold text-xs">
+                      {listing.symbol.slice(0, 3)}
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{listing.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">{getExchangeName(listing.exchange)}</span> • 
-                      <span className="ml-1">{formatTimeAgo(listing.listedAt)}</span>
+                    <h3 className="font-medium text-gray-900 text-sm">{listing.symbol}</h3>
+                    <p className="text-xs text-gray-500">
+                      {getExchangeName(listing.exchange)} • {listing.listedAt.toLocaleString("ko-KR", { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${status.color}`}>
-                      {status.label}
-                    </span>
-                    {listing.priceChangePercent && (
-                      <span className={`font-semibold ${parseFloat(listing.priceChangePercent) >= 0 ? 'text-success' : 'text-error'}`}>
-                        {parseFloat(listing.priceChangePercent) >= 0 ? '+' : ''}{listing.priceChangePercent}%
-                      </span>
-                    )}
-                  </div>
+                  {listing.currentPrice ? (
+                    <p className="font-semibold text-gray-900 text-sm">
+                      ₩{Number(listing.currentPrice).toLocaleString()}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400">시세 확인중</p>
+                  )}
                 </div>
               </div>
             );
           })}
-        </div>
-
-        <div className="mt-6 text-center">
-          <button className="text-primary hover:text-blue-700 font-medium text-sm inline-flex items-center">
-            모든 상장 내역 보기 
-            <ArrowRight className="ml-1 w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>
