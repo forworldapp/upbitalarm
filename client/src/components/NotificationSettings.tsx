@@ -85,8 +85,8 @@ export default function NotificationSettings() {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-testid="notification-settings">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">알림 설정</h2>
-        <p className="text-sm text-gray-600 mt-1">실시간 알림 및 모니터링 설정</p>
+        <h2 className="text-lg font-semibold text-gray-900">즉시 알림 설정</h2>
+        <p className="text-sm text-gray-600 mt-1">신규 상장 공시 감지 시 즉시 알림</p>
       </div>
       <div className="p-6 space-y-4">
         {/* Email Notifications */}

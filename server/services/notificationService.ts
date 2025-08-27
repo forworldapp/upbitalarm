@@ -146,40 +146,22 @@ export class NotificationService {
     const exchangeName = listing.exchange === "upbit" ? "업비트" : "빗썸";
     const exchangeEmoji = listing.exchange === "upbit" ? "🔵" : "🟡";
     
-    let message = `🚨 *긴급 상장 알림* ${exchangeEmoji}\n\n`;
-    message += `💰 **${listing.name}** (${listing.symbol})\n`;
-    message += `🏢 거래소: ${exchangeName}\n`;
-    message += `⏰ 상장일시: ${listing.listedAt.toLocaleString("ko-KR")}\n`;
-    message += `🆔 마켓 ID: \`${listing.marketId}\`\n`;
+    let message = `🚨 *신규상장* ${exchangeEmoji}\n`;
+    message += `**${listing.symbol}** - ${exchangeName}\n`;
+    message += `${listing.listedAt.toLocaleString("ko-KR", { hour: '2-digit', minute: '2-digit' })}\n`;
     
-    if (listing.currentPrice) {
-      message += `💵 현재 가격: ₩${listing.currentPrice}\n`;
-    }
-    
-    if (listing.priceChangePercent) {
-      const changeEmoji = parseFloat(listing.priceChangePercent) >= 0 ? "📈" : "📉";
-      message += `${changeEmoji} 변동률: ${listing.priceChangePercent}%\n`;
-    }
-    
-    // Add cross-exchange availability info
+    // Add cross-exchange availability info only if available
     const availableExchanges = [];
     if (listing.binanceAvailable) availableExchanges.push("바이낸스");
     if (listing.bybitAvailable) availableExchanges.push("바이비트");
     if (listing.okxAvailable) availableExchanges.push("OKX");
-    if (listing.gateAvailable) availableExchanges.push("Gate.io");
+    if (listing.gateAvailable) availableExchanges.push("Gate");
     if (listing.kucoinAvailable) availableExchanges.push("KuCoin");
     if (listing.huobiAvailable) availableExchanges.push("후오비");
     
     if (availableExchanges.length > 0) {
-      message += `\n🔄 *다른 거래소 보유 현황:*\n`;
-      message += `✅ ${availableExchanges.join(", ")}에서 거래 가능\n`;
-      message += `\n💡 *즉시 액션 필요:*\n`;
-      message += `1️⃣ 위 거래소에서 ${listing.symbol} 즉시 출금\n`;
-      message += `2️⃣ ${exchangeName}로 빠른 입금\n`;
-      message += `3️⃣ 상장 초기 가격에 매도 고려\n`;
+      message += `\n💰 다른거래소: ${availableExchanges.join(", ")}`;
     }
-    
-    message += `\n⚡ *시간이 중요합니다! 지금 즉시 행동하세요!*`;
     
     return message;
   }

@@ -7,6 +7,7 @@ The application is built as a full-stack TypeScript project with a React fronten
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Alert preferences: Simple and immediate notifications when new listing announcements appear. Focus on instant alerts rather than detailed information.
 
 # System Architecture
 
