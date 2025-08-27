@@ -4,10 +4,29 @@ import { type Listing, type NotificationSettings } from "@shared/schema";
 export class NotificationService {
   private emailApiKey: string;
   private telegramBotToken: string;
+  private soundAlertPlayed: Set<string> = new Set();
   
   constructor() {
     this.emailApiKey = process.env.EMAIL_API_KEY || process.env.SENDGRID_API_KEY || "";
     this.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || "";
+  }
+
+  async sendImmediateNotification(listing: Listing): Promise<void> {
+    const settings = await storage.getNotificationSettings();
+    if (!settings || !settings.instantNotifications) return;
+
+    console.log(`🔔 IMMEDIATE ALERT: New ${listing.exchange.toUpperCase()} listing - ${listing.name} (${listing.symbol})`);
+    
+    // Send all notification types immediately for new listings
+    await this.sendNotifications(listing);
+    
+    // Log the immediate alert
+    await this.logAlert(listing, "IMMEDIATE_LISTING_ALERT");
+  }
+
+  private async logAlert(listing: Listing, alertType: string): Promise<void> {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${alertType}: ${listing.exchange.toUpperCase()} - ${listing.name} (${listing.symbol}) - Market: ${listing.marketId}`);
   }
 
   async sendNotifications(listing: Listing): Promise<void> {
@@ -127,7 +146,7 @@ export class NotificationService {
     const exchangeName = listing.exchange === "upbit" ? "업비트" : "빗썸";
     const exchangeEmoji = listing.exchange === "upbit" ? "🔵" : "🟡";
     
-    let message = `🚀 *새로운 상장 알림* ${exchangeEmoji}\n\n`;
+    let message = `🚨 *긴급 상장 알림* ${exchangeEmoji}\n\n`;
     message += `💰 **${listing.name}** (${listing.symbol})\n`;
     message += `🏢 거래소: ${exchangeName}\n`;
     message += `⏰ 상장일시: ${listing.listedAt.toLocaleString("ko-KR")}\n`;
@@ -141,6 +160,26 @@ export class NotificationService {
       const changeEmoji = parseFloat(listing.priceChangePercent) >= 0 ? "📈" : "📉";
       message += `${changeEmoji} 변동률: ${listing.priceChangePercent}%\n`;
     }
+    
+    // Add cross-exchange availability info
+    const availableExchanges = [];
+    if (listing.binanceAvailable) availableExchanges.push("바이낸스");
+    if (listing.bybitAvailable) availableExchanges.push("바이비트");
+    if (listing.okxAvailable) availableExchanges.push("OKX");
+    if (listing.gateAvailable) availableExchanges.push("Gate.io");
+    if (listing.kucoinAvailable) availableExchanges.push("KuCoin");
+    if (listing.huobiAvailable) availableExchanges.push("후오비");
+    
+    if (availableExchanges.length > 0) {
+      message += `\n🔄 *다른 거래소 보유 현황:*\n`;
+      message += `✅ ${availableExchanges.join(", ")}에서 거래 가능\n`;
+      message += `\n💡 *즉시 액션 필요:*\n`;
+      message += `1️⃣ 위 거래소에서 ${listing.symbol} 즉시 출금\n`;
+      message += `2️⃣ ${exchangeName}로 빠른 입금\n`;
+      message += `3️⃣ 상장 초기 가격에 매도 고려\n`;
+    }
+    
+    message += `\n⚡ *시간이 중요합니다! 지금 즉시 행동하세요!*`;
     
     return message;
   }

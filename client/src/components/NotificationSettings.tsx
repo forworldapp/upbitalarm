@@ -83,9 +83,10 @@ export default function NotificationSettings() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200" data-testid="notification-settings">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">알림 설정</h2>
+        <p className="text-sm text-gray-600 mt-1">실시간 알림 및 모니터링 설정</p>
       </div>
       <div className="p-6 space-y-4">
         {/* Email Notifications */}
@@ -129,11 +130,13 @@ export default function NotificationSettings() {
 
         <hr className="my-4" />
 
-        {/* Polling Interval */}
+        {/* Polling Interval - Real-time focused */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">폴링 간격</label>
+          <label className="block text-sm font-medium text-gray-900 mb-2">
+            모니터링 간격 <span className="text-red-600 text-xs">(빠를수록 좋음)</span>
+          </label>
           <Select
-            value={settings.pollingInterval?.toString() || "600"}
+            value={settings.pollingInterval?.toString() || "60"}
             onValueChange={handlePollingIntervalChange}
             disabled={updateSettingsMutation.isPending}
           >
@@ -141,12 +144,16 @@ export default function NotificationSettings() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="300">5분</SelectItem>
-              <SelectItem value="600">10분</SelectItem>
-              <SelectItem value="900">15분</SelectItem>
-              <SelectItem value="1800">30분</SelectItem>
+              <SelectItem value="30">30초 (초고속)</SelectItem>
+              <SelectItem value="60">1분 (고속)</SelectItem>
+              <SelectItem value="120">2분 (빠름)</SelectItem>
+              <SelectItem value="300">5분 (보통)</SelectItem>
+              <SelectItem value="600">10분 (느림)</SelectItem>
             </SelectContent>
           </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            더 빠른 간격일수록 신규 상장을 더 빨리 감지합니다
+          </p>
         </div>
 
         {/* Notification Filters */}

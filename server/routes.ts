@@ -136,16 +136,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Set up scheduled monitoring
+  // Real-time alert endpoint
+  app.post("/api/alerts/test", async (req, res) => {
+    try {
+      console.log("🔔 Manual alert test triggered");
+      res.json({ message: "Alert test completed", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send test alert" });
+    }
+  });
+
+  // Manual force check endpoint for immediate monitoring
+  app.post("/api/monitor/force", async (req, res) => {
+    try {
+      console.log("🚨 FORCE MONITORING TRIGGERED");
+      await exchangeMonitor.checkAllExchanges();
+      res.json({ 
+        message: "Force monitoring completed", 
+        timestamp: new Date().toISOString() 
+      });
+    } catch (error) {
+      console.error("Force monitoring failed:", error);
+      res.status(500).json({ error: "Force monitoring failed" });
+    }
+  });
+
+  // Set up scheduled monitoring with faster intervals
   const setupScheduledTasks = async () => {
     const settings = await storage.getNotificationSettings();
-    const pollingInterval = settings?.pollingInterval || 600; // Default 10 minutes
+    const pollingInterval = settings?.pollingInterval || 60; // Default 1 minute for real-time
     
-    // Convert seconds to cron format (every N minutes)
-    const minutes = Math.floor(pollingInterval / 60);
-    const cronPattern = `*/${minutes} * * * *`;
+    // Convert seconds to cron format (every N seconds/minutes)
+    let cronPattern;
+    if (pollingInterval < 60) {
+      // For intervals less than 1 minute, use seconds
+      cronPattern = `*/${pollingInterval} * * * * *`;
+    } else {
+      // For intervals 1 minute or more
+      const minutes = Math.floor(pollingInterval / 60);
+      cronPattern = `*/${minutes} * * * *`;
+    }
     
-    console.log(`Setting up scheduled monitoring with interval: ${minutes} minutes`);
+    const intervalText = pollingInterval < 60 ? `${pollingInterval} seconds` : `${Math.floor(pollingInterval / 60)} minutes`;
+    console.log(`Setting up scheduled monitoring with interval: ${intervalText}`);
     
     cron.schedule(cronPattern, async () => {
       console.log("Running scheduled exchange monitoring...");

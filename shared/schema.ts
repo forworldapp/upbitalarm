@@ -14,6 +14,21 @@ export const listings = pgTable("listings", {
   priceChangePercent: decimal("price_change_percent"),
   marketId: text("market_id").notNull(),
   notificationSent: boolean("notification_sent").default(false),
+  // Cross-exchange availability information
+  binanceAvailable: boolean("binance_available").default(false),
+  bybitAvailable: boolean("bybit_available").default(false),
+  okxAvailable: boolean("okx_available").default(false),
+  gateAvailable: boolean("gate_available").default(false),
+  huobiAvailable: boolean("huobi_available").default(false),
+  kucoinAvailable: boolean("kucoin_available").default(false),
+  // Deposit/Withdrawal status for target exchanges
+  upbitDepositEnabled: boolean("upbit_deposit_enabled"),
+  upbitWithdrawEnabled: boolean("upbit_withdraw_enabled"),
+  bithumbDepositEnabled: boolean("bithumb_deposit_enabled"),
+  bithumbWithdrawEnabled: boolean("bithumb_withdraw_enabled"),
+  // Alert priority and timing
+  priority: text("priority").default("normal"), // 'high', 'normal', 'low'
+  estimatedListingTime: timestamp("estimated_listing_time"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -22,12 +37,20 @@ export const notificationSettings = pgTable("notification_settings", {
   email: boolean("email").default(true),
   telegram: boolean("telegram").default(false),
   discord: boolean("discord").default(false),
-  pollingInterval: integer("polling_interval").default(600), // seconds
+  pollingInterval: integer("polling_interval").default(60), // seconds - faster for real-time
   filterMajorCoinsOnly: boolean("filter_major_coins_only").default(false),
   filterMinMarketCap: decimal("filter_min_market_cap"),
   emailAddress: text("email_address"),
   telegramChatId: text("telegram_chat_id"),
   discordWebhookUrl: text("discord_webhook_url"),
+  // Enhanced notification settings
+  instantNotifications: boolean("instant_notifications").default(true),
+  soundAlerts: boolean("sound_alerts").default(true),
+  pushNotifications: boolean("push_notifications").default(true),
+  notifyOnCrossExchangeAvailability: boolean("notify_cross_exchange").default(true),
+  notifyOnDepositWithdrawStatus: boolean("notify_deposit_withdraw").default(true),
+  minimumTimeBeforeListing: integer("min_time_before_listing").default(300), // 5 minutes
+  highPriorityOnly: boolean("high_priority_only").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

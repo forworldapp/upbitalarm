@@ -46,11 +46,18 @@ function getCoinColor(symbol: string) {
   return colors[Math.abs(hash) % colors.length];
 }
 
-export default function RecentListings() {
-  const { data: listings, isLoading, error } = useQuery<Listing[]>({
+interface RecentListingsProps {
+  limit?: number;
+}
+
+export default function RecentListings({ limit = 10 }: RecentListingsProps) {
+  const { data: allListings, isLoading, error } = useQuery<Listing[]>({
     queryKey: ["/api/listings/recent"],
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 30000, // Faster refresh for real-time feel
   });
+
+  // Apply limit to the listings
+  const listings = allListings?.slice(0, limit);
 
   if (isLoading) {
     return (

@@ -1,5 +1,7 @@
 import { storage } from "../storage";
 import { type InsertListing, type InsertSystemStatus } from "@shared/schema";
+import { crossExchangeMonitor } from "./crossExchangeMonitor";
+import { notificationService } from "./notificationService";
 
 interface UpbitMarket {
   market: string;
@@ -82,15 +84,20 @@ export class ExchangeMonitor {
             currentPrice: null,
             priceChangePercent: null,
             notificationSent: false,
+            priority: "high", // All new listings are high priority
           };
 
           const createdListing = await storage.createListing(listing);
           this.knownMarkets.add(marketKey);
           
-          console.log(`New Upbit listing detected: ${market.english_name} (${market.market})`);
+          console.log(`🚨 NEW UPBIT LISTING DETECTED: ${market.english_name} (${market.market})`);
           
-          // Trigger notification
-          // Note: In production, this would be handled by the notification service
+          // Immediately send notification for new listing
+          await notificationService.sendImmediateNotification(createdListing);
+          
+          // Check cross-exchange availability in background
+          crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
+            .catch(err => console.error("Failed to update cross-exchange data:", err));
         }
       }
     } catch (error) {
@@ -156,15 +163,20 @@ export class ExchangeMonitor {
             currentPrice: (ticker as BithumbTicker).closing_price,
             priceChangePercent: (ticker as BithumbTicker).fluctate_rate_24H,
             notificationSent: false,
+            priority: "high", // All new listings are high priority
           };
 
           const createdListing = await storage.createListing(listing);
           this.knownMarkets.add(marketKey);
           
-          console.log(`New Bithumb listing detected: ${symbol}`);
+          console.log(`🚨 NEW BITHUMB LISTING DETECTED: ${symbol}`);
           
-          // Trigger notification
-          // Note: In production, this would be handled by the notification service
+          // Immediately send notification for new listing
+          await notificationService.sendImmediateNotification(createdListing);
+          
+          // Check cross-exchange availability in background
+          crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
+            .catch(err => console.error("Failed to update cross-exchange data:", err));
         }
       }
     } catch (error) {

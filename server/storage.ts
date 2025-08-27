@@ -41,12 +41,20 @@ export class MemStorage implements IStorage {
       email: true,
       telegram: false,
       discord: false,
-      pollingInterval: 600,
+      pollingInterval: 60, // Faster polling for real-time alerts
       filterMajorCoinsOnly: false,
       filterMinMarketCap: null,
       emailAddress: null,
       telegramChatId: null,
       discordWebhookUrl: null,
+      // Enhanced notification settings
+      instantNotifications: true,
+      soundAlerts: true,
+      pushNotifications: true,
+      notifyOnCrossExchangeAvailability: true,
+      notifyOnDepositWithdrawStatus: true,
+      minimumTimeBeforeListing: 300, // 5 minutes
+      highPriorityOnly: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -79,6 +87,21 @@ export class MemStorage implements IStorage {
       currentPrice: insertListing.currentPrice || null,
       priceChangePercent: insertListing.priceChangePercent || null,
       notificationSent: insertListing.notificationSent || false,
+      // Cross-exchange availability - default to false until checked
+      binanceAvailable: false,
+      bybitAvailable: false,
+      okxAvailable: false,
+      gateAvailable: false,
+      huobiAvailable: false,
+      kucoinAvailable: false,
+      // Deposit/Withdrawal status - default to null until checked
+      upbitDepositEnabled: null,
+      upbitWithdrawEnabled: null,
+      bithumbDepositEnabled: null,
+      bithumbWithdrawEnabled: null,
+      // Alert priority and timing
+      priority: insertListing.priority || "normal",
+      estimatedListingTime: insertListing.estimatedListingTime || null,
       createdAt: new Date(),
     };
     this.listings.set(id, listing);
@@ -113,12 +136,20 @@ export class MemStorage implements IStorage {
       email: settings.email || false,
       telegram: settings.telegram || false,
       discord: settings.discord || false,
-      pollingInterval: settings.pollingInterval || 600,
+      pollingInterval: settings.pollingInterval || 60,
       filterMajorCoinsOnly: settings.filterMajorCoinsOnly || false,
       filterMinMarketCap: settings.filterMinMarketCap || null,
       emailAddress: settings.emailAddress || null,
       telegramChatId: settings.telegramChatId || null,
       discordWebhookUrl: settings.discordWebhookUrl || null,
+      // Enhanced notification settings
+      instantNotifications: settings.instantNotifications !== undefined ? settings.instantNotifications : true,
+      soundAlerts: settings.soundAlerts !== undefined ? settings.soundAlerts : true,
+      pushNotifications: settings.pushNotifications !== undefined ? settings.pushNotifications : true,
+      notifyOnCrossExchangeAvailability: settings.notifyOnCrossExchangeAvailability !== undefined ? settings.notifyOnCrossExchangeAvailability : true,
+      notifyOnDepositWithdrawStatus: settings.notifyOnDepositWithdrawStatus !== undefined ? settings.notifyOnDepositWithdrawStatus : true,
+      minimumTimeBeforeListing: settings.minimumTimeBeforeListing || 300,
+      highPriorityOnly: settings.highPriorityOnly || false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
