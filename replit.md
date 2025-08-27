@@ -9,6 +9,7 @@ The application is built as a full-stack TypeScript project with a React fronten
 Preferred communication style: Simple, everyday language.
 Alert preferences: Simple and immediate notifications when new listing announcements appear. Focus on instant alerts rather than detailed information.
 Notification priority: Listing announcements (공시) are more important than completed listings and should be detected and alerted immediately.
+Exchange monitoring: Both Upbit and Bithumb announcement formats supported with accurate keyword detection.
 
 # System Architecture
 

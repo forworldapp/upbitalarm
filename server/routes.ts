@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { exchangeMonitor } from "./services/exchangeMonitor";
 import { announcementMonitor } from "./services/announcementMonitor";
 import { notificationService } from "./services/notificationService";
-import { insertNotificationSettingsSchema } from "@shared/schema";
+import { insertNotificationSettingsSchema, type InsertListing } from "@shared/schema";
 import cron from "node-cron";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -151,15 +151,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/alerts/test-announcement", async (req, res) => {
     try {
       // Create a test announcement alert
+      // Randomly choose between Upbit and Bithumb announcement formats
+      const announcements = [
+        {
+          symbol: "CYBER",
+          name: "사이버",
+          exchange: "upbit",
+          title: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가",
+          url: "https://upbit.com/service_center/notice?id=5409"
+        },
+        {
+          symbol: "SD", 
+          name: "스테이더",
+          exchange: "bithumb",
+          title: "스테이더(SD) 원화 마켓 추가",
+          url: "https://feed.bithumb.com/notice/1649642"
+        }
+      ];
+      
+      const randomAnnouncement = announcements[Math.floor(Math.random() * announcements.length)];
+      
       const testAnnouncement: InsertListing = {
-        symbol: "CYBER",
-        name: "사이버",
-        exchange: "upbit",
-        marketId: "ANNOUNCEMENT-CYBER",
+        symbol: randomAnnouncement.symbol,
+        name: randomAnnouncement.name,
+        exchange: randomAnnouncement.exchange as "upbit" | "bithumb",
+        marketId: `ANNOUNCEMENT-${randomAnnouncement.symbol}`,
         listedAt: new Date(),
         announcementId: `test:${Date.now()}`,
-        announcementTitle: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가",
-        announcementUrl: "https://upbit.com/service_center/notice?id=5409",
+        announcementTitle: randomAnnouncement.title,
+        announcementUrl: randomAnnouncement.url,
         isAnnouncement: true,
       };
 

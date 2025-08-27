@@ -20,7 +20,7 @@ interface BithumbAnnouncement {
 
 export class AnnouncementMonitor {
   private upbitAnnouncementUrl = "https://upbit.com/service_center/notice";
-  private bithumbAnnouncementUrl = "https://cafe.bithumb.com";
+  private bithumbAnnouncementUrl = "https://feed.bithumb.com/notice";
   private knownAnnouncements: Set<string> = new Set();
 
   constructor() {
@@ -64,6 +64,7 @@ export class AnnouncementMonitor {
 
   private isListingAnnouncement(title: string): boolean {
     const listingKeywords = [
+      // 업비트 키워드
       "마켓 디지털 자산 추가",
       "디지털 자산 추가", 
       "KRW 마켓 디지털 자산 추가",
@@ -73,6 +74,13 @@ export class AnnouncementMonitor {
       "거래지원 개시",
       "거래 지원 개시",
       "신규 디지털 자산 거래",
+      // 빗썸 키워드
+      "원화 마켓 추가",
+      "BTC 마켓 추가",
+      "마켓 추가",
+      "거래지원",
+      "거래 개시",
+      // 영어 키워드
       "Digital Asset Addition",
       "Market Addition"
     ];
@@ -84,14 +92,16 @@ export class AnnouncementMonitor {
   }
 
   private extractCoinFromAnnouncement(title: string): { symbol: string; name?: string } | null {
-    // Pattern based on real Upbit announcements: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가"
+    // Patterns for both Upbit and Bithumb announcements
     const patterns = [
-      // "사이버(CYBER) KRW, USDT 마켓" - Korean name with symbol in parentheses
+      // 업비트: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가"
       /([^(]+)\(([A-Z]{2,10})\)\s*(KRW|BTC|USDT|ETH)/,
-      // "비트코인(BTC) 원화마켓" 
+      // 빗썸: "스테이더(SD) 원화 마켓 추가"
+      /([^(]+)\(([A-Z]{2,10})\)\s*원화/,
+      // 일반: "비트코인(BTC)" 형태
       /([^(]+)\(([A-Z]{2,10})\)/,
-      // "CYBER KRW 마켓 추가"
-      /^([A-Z]{2,10})\s*(KRW|BTC|USDT)/
+      // 심볼만: "CYBER KRW 마켓"
+      /^([A-Z]{2,10})\s*(KRW|BTC|USDT|원화)/
     ];
 
     for (const pattern of patterns) {
