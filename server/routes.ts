@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { exchangeMonitor } from "./services/exchangeMonitor";
+import { announcementMonitor } from "./services/announcementMonitor";
 import { notificationService } from "./services/notificationService";
 import { insertNotificationSettingsSchema } from "@shared/schema";
 import cron from "node-cron";
@@ -211,6 +212,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await exchangeMonitor.checkAllExchanges();
       } catch (error) {
         console.error("Scheduled monitoring failed:", error);
+      }
+    });
+
+    // Set up announcement monitoring (every 30 seconds for fast detection)
+    cron.schedule("*/30 * * * * *", async () => {
+      try {
+        await announcementMonitor.monitorAll();
+      } catch (error) {
+        console.error("Announcement monitoring failed:", error);
       }
     });
   };

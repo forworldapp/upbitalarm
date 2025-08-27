@@ -8,6 +8,7 @@ The application is built as a full-stack TypeScript project with a React fronten
 
 Preferred communication style: Simple, everyday language.
 Alert preferences: Simple and immediate notifications when new listing announcements appear. Focus on instant alerts rather than detailed information.
+Notification priority: Listing announcements (공시) are more important than completed listings and should be detected and alerted immediately.
 
 # System Architecture
 
@@ -41,6 +42,7 @@ Alert preferences: Simple and immediate notifications when new listing announcem
 
 ### Exchange APIs
 - **Upbit API** integration for monitoring Korean exchange listings
+- **Upbit Announcement API** for detecting listing announcements (every 30 seconds)
 - **Bithumb API** integration as secondary exchange source
 - Rate limiting awareness and error handling for API calls
 - Real-time price tracking and market data collection
@@ -72,7 +74,10 @@ Alert preferences: Simple and immediate notifications when new listing announcem
 
 ## Monitoring and Reliability
 - **Health check** endpoints for exchange API status
+- **Dual monitoring system** - listing monitoring (1 minute) and announcement monitoring (30 seconds)
+- **Announcement detection** from Upbit notice board with keyword matching
 - **Response time** tracking for external API calls
 - **Rate limit** monitoring and usage tracking
 - **Error logging** and notification system status tracking
 - **Graceful degradation** when external services are unavailable
+- **Real-time alerts** differentiate between announcements (📢 상장공시) and actual listings

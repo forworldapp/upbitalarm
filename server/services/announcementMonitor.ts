@@ -80,11 +80,11 @@ export class AnnouncementMonitor {
                 isAnnouncement: true,
               };
 
-              await storage.createListing(listing);
+              const createdListing = await storage.createListing(listing);
               this.knownAnnouncements.add(announcementKey);
               
-              // Send immediate notification for announcement
-              await notificationService.sendNotification(listing);
+              // Send immediate notification for announcement  
+              await notificationService.sendNotifications(createdListing);
               
               console.log(`[${new Date().toISOString()}] LISTING_ANNOUNCEMENT_ALERT: UPBIT - ${coinInfo.symbol} - ${announcement.title}`);
             }
