@@ -152,14 +152,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Create a test announcement alert
       const testAnnouncement: InsertListing = {
-        symbol: "TEST",
-        name: "테스트코인",
+        symbol: "CYBER",
+        name: "사이버",
         exchange: "upbit",
-        marketId: "ANNOUNCEMENT-TEST",
+        marketId: "ANNOUNCEMENT-CYBER",
         listedAt: new Date(),
         announcementId: `test:${Date.now()}`,
-        announcementTitle: "테스트코인(TEST) 원화마켓 신규 디지털 자산 거래 지원 안내",
-        announcementUrl: "https://upbit.com/service_center/notice",
+        announcementTitle: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가",
+        announcementUrl: "https://upbit.com/service_center/notice?id=5409",
         isAnnouncement: true,
       };
 

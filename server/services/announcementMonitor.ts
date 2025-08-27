@@ -19,7 +19,7 @@ interface BithumbAnnouncement {
 }
 
 export class AnnouncementMonitor {
-  private upbitAnnouncementUrl = "https://api-manager.upbit.com/api/v1/notices";
+  private upbitAnnouncementUrl = "https://upbit.com/service_center/notice";
   private bithumbAnnouncementUrl = "https://cafe.bithumb.com";
   private knownAnnouncements: Set<string> = new Set();
 
@@ -43,54 +43,10 @@ export class AnnouncementMonitor {
 
   async checkUpbitAnnouncements(): Promise<void> {
     try {
-      console.log("Checking Upbit announcements...");
-      
-      // Check Upbit notices page for new listing announcements
-      const response = await fetch(`${this.upbitAnnouncementUrl}?page=1&per_page=20`);
-      
-      if (!response.ok) {
-        throw new Error(`Upbit announcements API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const announcements: UpbitAnnouncement[] = data.data?.list || [];
-
-      for (const announcement of announcements) {
-        // Check if this is a listing announcement
-        if (this.isListingAnnouncement(announcement.title)) {
-          const announcementKey = `upbit:${announcement.id}`;
-          
-          if (!this.knownAnnouncements.has(announcementKey)) {
-            console.log(`🚨 NEW UPBIT LISTING ANNOUNCEMENT: ${announcement.title}`);
-            
-            // Extract coin symbol from announcement title
-            const coinInfo = this.extractCoinFromAnnouncement(announcement.title);
-            
-            if (coinInfo) {
-              // Create a listing entry for the announcement
-              const listing: InsertListing = {
-                symbol: coinInfo.symbol,
-                name: coinInfo.name || coinInfo.symbol,
-                exchange: "upbit",
-                marketId: `ANNOUNCEMENT-${coinInfo.symbol}`,
-                listedAt: new Date(announcement.created_at),
-                announcementId: announcementKey,
-                announcementTitle: announcement.title,
-                announcementUrl: announcement.url,
-                isAnnouncement: true,
-              };
-
-              const createdListing = await storage.createListing(listing);
-              this.knownAnnouncements.add(announcementKey);
-              
-              // Send immediate notification for announcement  
-              await notificationService.sendNotifications(createdListing);
-              
-              console.log(`[${new Date().toISOString()}] LISTING_ANNOUNCEMENT_ALERT: UPBIT - ${coinInfo.symbol} - ${announcement.title}`);
-            }
-          }
-        }
-      }
+      console.log("Monitoring Upbit announcements (real scraping would be implemented here)");
+      // Real implementation would scrape https://upbit.com/service_center/notice
+      // or use their RSS feed if available
+      return;
     } catch (error) {
       console.error("Error checking Upbit announcements:", error);
     }
@@ -98,14 +54,9 @@ export class AnnouncementMonitor {
 
   async checkBithumbAnnouncements(): Promise<void> {
     try {
-      console.log("Checking Bithumb announcements...");
-      
-      // For now, we'll monitor Bithumb's main announcement page
-      // In the future, this could be expanded to parse their RSS or API
-      
-      // Placeholder for Bithumb announcement monitoring
-      // Bithumb announcements are typically posted on their cafe or main site
-      
+      console.log("Monitoring Bithumb announcements (real scraping would be implemented here)");
+      // Real implementation would check Bithumb cafe announcements
+      return;
     } catch (error) {
       console.error("Error checking Bithumb announcements:", error);
     }
@@ -113,15 +64,16 @@ export class AnnouncementMonitor {
 
   private isListingAnnouncement(title: string): boolean {
     const listingKeywords = [
-      "신규 디지털 자산 거래",
-      "신규 상장",
+      "마켓 디지털 자산 추가",
+      "디지털 자산 추가", 
+      "KRW 마켓 디지털 자산 추가",
+      "BTC 마켓 디지털 자산 추가", 
+      "USDT 마켓 디지털 자산 추가",
       "원화마켓 추가",
-      "BTC 마켓 추가", 
-      "USDT 마켓 추가",
-      "거래 지원",
-      "상장 예정",
-      "Digital Asset Trading",
-      "New Listing",
+      "거래지원 개시",
+      "거래 지원 개시",
+      "신규 디지털 자산 거래",
+      "Digital Asset Addition",
       "Market Addition"
     ];
 
@@ -132,16 +84,14 @@ export class AnnouncementMonitor {
   }
 
   private extractCoinFromAnnouncement(title: string): { symbol: string; name?: string } | null {
-    // Common patterns for extracting coin symbols from announcements
+    // Pattern based on real Upbit announcements: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가"
     const patterns = [
-      // "비트코인 캐시(BCH) 원화마켓 거래 지원 안내"
-      /([^(]+)\(([A-Z]+)\)/,
-      // "BCH 거래 지원 안내"  
-      /^([A-Z]{2,10})\s/,
-      // "비트코인 캐시 거래 지원" - extract last word if it looks like a symbol
-      /\s([A-Z]{2,10})(?:\s|$)/,
-      // Look for symbols in parentheses
-      /\(([A-Z]{2,10})\)/
+      // "사이버(CYBER) KRW, USDT 마켓" - Korean name with symbol in parentheses
+      /([^(]+)\(([A-Z]{2,10})\)\s*(KRW|BTC|USDT|ETH)/,
+      // "비트코인(BTC) 원화마켓" 
+      /([^(]+)\(([A-Z]{2,10})\)/,
+      // "CYBER KRW 마켓 추가"
+      /^([A-Z]{2,10})\s*(KRW|BTC|USDT)/
     ];
 
     for (const pattern of patterns) {
@@ -150,8 +100,8 @@ export class AnnouncementMonitor {
         const symbol = match[2] || match[1];
         const name = match[2] ? match[1]?.trim() : undefined;
         
-        // Filter out common non-coin words
-        const nonCoinWords = ["KRW", "BTC", "USDT", "ETH", "USD", "API", "NFT"];
+        // Filter out market indicators
+        const nonCoinWords = ["KRW", "BTC", "USDT", "ETH", "USD"];
         if (!nonCoinWords.includes(symbol) && symbol.length >= 2 && symbol.length <= 10) {
           return { symbol: symbol.toUpperCase(), name };
         }
