@@ -102,6 +102,11 @@ export class MemStorage implements IStorage {
       // Alert priority and timing
       priority: insertListing.priority || "normal",
       estimatedListingTime: insertListing.estimatedListingTime || null,
+      // Announcement-specific fields
+      announcementId: insertListing.announcementId || null,
+      announcementTitle: insertListing.announcementTitle || null,
+      announcementUrl: insertListing.announcementUrl || null,
+      isAnnouncement: insertListing.isAnnouncement || false,
       createdAt: new Date(),
     };
     this.listings.set(id, listing);

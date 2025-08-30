@@ -43,12 +43,93 @@ export class AnnouncementMonitor {
 
   async checkUpbitAnnouncements(): Promise<void> {
     try {
-      console.log("Monitoring Upbit announcements (real scraping would be implemented here)");
-      // Real implementation would scrape https://upbit.com/service_center/notice
-      // or use their RSS feed if available
-      return;
+      console.log("Monitoring Upbit announcements...");
+      
+      // 테스트용 mock 데이터 - 실제 업비트 공지 형태를 시뮬레이션
+      const mockAnnouncements: UpbitAnnouncement[] = [
+        {
+          id: 1,
+          title: "사이버(CYBER) KRW, USDT 마켓 디지털 자산 추가",
+          category: "거래",
+          created_at: new Date().toISOString(),
+          url: "https://upbit.com/service_center/notice/1"
+        },
+        {
+          id: 2, 
+          title: "스테이더(SD) KRW 마켓 디지털 자산 추가",
+          category: "거래",
+          created_at: new Date().toISOString(),
+          url: "https://upbit.com/service_center/notice/2"
+        },
+        {
+          id: 3,
+          title: "시스템 점검 안내",
+          category: "일반",
+          created_at: new Date().toISOString(), 
+          url: "https://upbit.com/service_center/notice/3"
+        }
+      ];
+
+      console.log(`Found ${mockAnnouncements.length} announcements`);
+
+      for (const announcement of mockAnnouncements) {
+        await this.processUpbitAnnouncement(announcement);
+      }
     } catch (error) {
       console.error("Error checking Upbit announcements:", error);
+    }
+  }
+
+  private async processUpbitAnnouncement(announcement: UpbitAnnouncement): Promise<void> {
+    const announcementKey = `upbit-${announcement.id}`;
+    
+    // 이미 처리된 공지인지 확인
+    if (this.knownAnnouncements.has(announcementKey)) {
+      return;
+    }
+
+    console.log(`Processing announcement: ${announcement.title}`);
+
+    // 상장 관련 공지인지 확인
+    if (this.isListingAnnouncement(announcement.title)) {
+      console.log(`🚀 LISTING DETECTED: ${announcement.title}`);
+      
+      const coinInfo = this.extractCoinFromAnnouncement(announcement.title);
+      
+      if (coinInfo) {
+        console.log(`Extracted coin: ${coinInfo.symbol}${coinInfo.name ? ` (${coinInfo.name})` : ''}`);
+        
+        // 데이터베이스에 저장
+        const listing: InsertListing = {
+          symbol: coinInfo.symbol,
+          name: coinInfo.name || coinInfo.symbol,
+          exchange: 'upbit',
+          listedAt: new Date(announcement.created_at),
+          marketId: `KRW-${coinInfo.symbol}`,
+          announcementId: announcementKey,
+          announcementTitle: announcement.title,
+          announcementUrl: announcement.url,
+          isAnnouncement: true,
+        };
+
+        try {
+          const savedListing = await storage.createListing(listing);
+          console.log(`✅ Saved listing: ${savedListing.symbol}`);
+          
+          // 알림 발송
+          await notificationService.sendImmediateNotification(savedListing);
+          console.log(`📨 Notification sent for ${savedListing.symbol}`);
+          
+          // 처리 완료된 공지로 등록
+          this.knownAnnouncements.add(announcementKey);
+        } catch (error) {
+          console.error(`Failed to save listing for ${coinInfo.symbol}:`, error);
+        }
+      } else {
+        console.log(`Could not extract coin info from: ${announcement.title}`);
+      }
+    } else {
+      console.log(`Not a listing announcement: ${announcement.title}`);
     }
   }
 

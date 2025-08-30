@@ -207,6 +207,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test announcement monitoring
+  app.post("/api/monitor/announcements", async (req, res) => {
+    try {
+      console.log("🔔 TESTING ANNOUNCEMENT MONITORING");
+      await announcementMonitor.monitorAll();
+      res.json({ 
+        message: "Announcement monitoring test completed", 
+        timestamp: new Date().toISOString() 
+      });
+    } catch (error) {
+      console.error("Announcement monitoring test failed:", error);
+      res.status(500).json({ error: "Announcement monitoring test failed" });
+    }
+  });
+
   // Set up scheduled monitoring with faster intervals
   const setupScheduledTasks = async () => {
     const settings = await storage.getNotificationSettings();
