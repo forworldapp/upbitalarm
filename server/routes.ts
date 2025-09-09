@@ -84,10 +84,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual check for new listings
   app.post("/api/check", async (req, res) => {
     try {
-      await exchangeMonitor.checkAllExchanges();
-      res.json({ message: "Check completed" });
+      // 임시 비활성화: exchangeMonitor 대신 announcementMonitor만 사용
+      await announcementMonitor.monitorAll();
+      res.json({ message: "Announcement monitoring completed" });
     } catch (error) {
-      res.status(500).json({ error: "Failed to check exchanges" });
+      res.status(500).json({ error: "Failed to check announcements" });
     }
   });
 
@@ -183,8 +184,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAnnouncement: true,
       };
 
-      await storage.createListing(testAnnouncement);
+      const createdListing = await storage.createListing(testAnnouncement);
       console.log("📢 Test announcement alert created");
+      
+      // Send immediate notification for test announcement
+      await notificationService.sendImmediateNotification(createdListing);
+      
       res.json({ message: "Test announcement alert created", timestamp: new Date().toISOString() });
     } catch (error) {
       console.error("Test announcement error:", error);
@@ -195,15 +200,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual force check endpoint for immediate monitoring
   app.post("/api/monitor/force", async (req, res) => {
     try {
-      console.log("🚨 FORCE MONITORING TRIGGERED");
-      await exchangeMonitor.checkAllExchanges();
+      console.log("🚨 FORCE ANNOUNCEMENT MONITORING TRIGGERED");
+      await announcementMonitor.monitorAll();
       res.json({ 
-        message: "Force monitoring completed", 
+        message: "Force announcement monitoring completed", 
         timestamp: new Date().toISOString() 
       });
     } catch (error) {
-      console.error("Force monitoring failed:", error);
-      res.status(500).json({ error: "Force monitoring failed" });
+      console.error("Force announcement monitoring failed:", error);
+      res.status(500).json({ error: "Force announcement monitoring failed" });
     }
   });
 
@@ -241,14 +246,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const intervalText = pollingInterval < 60 ? `${pollingInterval} seconds` : `${Math.floor(pollingInterval / 60)} minutes`;
     console.log(`Setting up scheduled monitoring with interval: ${intervalText}`);
     
-    cron.schedule(cronPattern, async () => {
-      console.log("Running scheduled exchange monitoring...");
-      try {
-        await exchangeMonitor.checkAllExchanges();
-      } catch (error) {
-        console.error("Scheduled monitoring failed:", error);
-      }
-    });
+    // 임시 비활성화: exchangeMonitor 대신 announcementMonitor만 사용
+    // cron.schedule(cronPattern, async () => {
+    //   console.log("Running scheduled exchange monitoring...");
+    //   try {
+    //     await exchangeMonitor.checkAllExchanges();
+    //   } catch (error) {
+    //     console.error("Scheduled monitoring failed:", error);
+    //   }
+    // });
 
     // Set up announcement monitoring (every 30 seconds for fast detection)
     cron.schedule("*/30 * * * * *", async () => {

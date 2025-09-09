@@ -1,6 +1,6 @@
 import { storage } from "../storage";
 import { type InsertListing, type InsertSystemStatus } from "@shared/schema";
-import { crossExchangeMonitor } from "./crossExchangeMonitor";
+// import { crossExchangeMonitor } from "./crossExchangeMonitor"; // 임시 비활성화
 import { notificationService } from "./notificationService";
 
 interface UpbitMarket {
@@ -95,9 +95,9 @@ export class ExchangeMonitor {
           // Immediately send notification for new listing
           await notificationService.sendImmediateNotification(createdListing);
           
-          // Check cross-exchange availability in background
-          crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
-            .catch(err => console.error("Failed to update cross-exchange data:", err));
+          // Check cross-exchange availability in background (임시 비활성화)
+          // crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
+          //   .catch(err => console.error("Failed to update cross-exchange data:", err));
         }
       }
     } catch (error) {
@@ -174,9 +174,9 @@ export class ExchangeMonitor {
           // Immediately send notification for new listing
           await notificationService.sendImmediateNotification(createdListing);
           
-          // Check cross-exchange availability in background
-          crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
-            .catch(err => console.error("Failed to update cross-exchange data:", err));
+          // Check cross-exchange availability in background (임시 비활성화)
+          // crossExchangeMonitor.updateListingWithCrossExchangeData(createdListing)
+          //   .catch(err => console.error("Failed to update cross-exchange data:", err));
         }
       }
     } catch (error) {
@@ -195,10 +195,12 @@ export class ExchangeMonitor {
   }
 
   async checkAllExchanges(): Promise<void> {
-    await Promise.all([
-      this.checkUpbitListings(),
-      this.checkBithumbListings(),
-    ]);
+    // 임시 비활성화: 기존 마켓을 신규 상장으로 인식하는 문제 해결 중
+    console.log("Exchange monitoring disabled - only announcement monitoring active");
+    // await Promise.all([
+    //   this.checkUpbitListings(),
+    //   this.checkBithumbListings(),
+    // ]);
   }
 }
 
